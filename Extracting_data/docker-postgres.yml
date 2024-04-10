@@ -8,7 +8,7 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASS}
-      - POSTGRES_DB="london_bike"
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - "./london_bike_data:/var/lib/postgresql/data"
     ports:

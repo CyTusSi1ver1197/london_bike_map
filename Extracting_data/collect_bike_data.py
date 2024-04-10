@@ -6,10 +6,12 @@ import sys
 import psycopg2
 import pandas as pd
 import datetime as dt
+import argparse
 from io import StringIO
 from time import time
-from dotenv import load_dotenv, dotenv_values
-from sqlalchemy import create_engine
+from dotenv import load_dotenv
+
+
 
 load_dotenv()
 user = os.getenv("POSTGRES_USER")
@@ -48,38 +50,19 @@ def connect(params_dic):
 
 def create_table(connection, dtypes, table_names):
     cursor = connection.cursor()
+    print("Start creating table ... ")
     create_table_query = f'CREATE TABLE IF NOT EXISTS {table_names} ('
     for column, dtype in dtypes.items():
         create_table_query += f'"{column}" {dtype}, '
     create_table_query = create_table_query.rstrip(", ") + ")"
     cursor.execute(create_table_query)
     connection.commit()
+    print(f"Done creating table: {table_names}")
     cursor.close()
 
-
-# def copy_from_file(conn, df, table):
-#     """
-#     Here we are going save the dataframe on disk as 
-#     a csv file, load the csv file  
-#     and use copy_from() to copy it to the table
-#     """
-#     # Save the dataframe to disk
-#     tmp_df = "./tmp_dataframe.csv"
-#     df.to_csv(tmp_df, index_label='id', header=False)
-#     f = open(tmp_df, 'r')
-#     cursor = conn.cursor()
-#     try:
-#         cursor.copy_from(f, table, sep=",")
-#         conn.commit()
-#     except (Exception, psycopg2.DatabaseError) as error:
-#         os.remove(tmp_df)
-#         print("Error: %s" % error)
-#         conn.rollback()
-#         cursor.close()
-#         return 1
-#     print("copy_from_file() done")
-#     cursor.close()
-#     os.remove(tmp_df)
+def create_multi_tables(conn, dtypes, table_names: list):
+    for table in table_names:
+        create_table(conn, dtypes, table)
 
 def copy_from_csv(conn, df, table):
     cur = conn.cursor()
@@ -100,15 +83,16 @@ def copy_from_csv(conn, df, table):
     print("copy_from_csv() done")
     cur.close()
 
-def find_first_monday(year):
+def find_first_day(year):
     d = dt.date(year, 1, 1)
     while d.weekday() != 2:  # Monday is represented by 0, Tues : 1 and so on
         d += dt.timedelta(1)
     return d
 
 def generate_csv_name(start_year, end_year):
-    id = 91
-    start_week = find_first_monday(start_year)
+    id_2017 = 39
+    id = (start_year - 2017)*52 + id_2017
+    start_week = find_first_day(start_year)
     pre_date = "JourneyDataExtract"
     after_date = ".csv"
     str_List = []
@@ -125,11 +109,13 @@ def generate_csv_name(start_year, end_year):
 
 
 
-def main():   
+def main(args):   
     t_total_start = time()
+    start_year = args.start
+    end_year = args.end
 
     # Creating a list of filenames:
-    file_List = generate_csv_name(2018,2018)
+    file_List = generate_csv_name(int(start_year), int(end_year))
 
     # Table data types:
     bike_dtypes = {
@@ -162,11 +148,14 @@ def main():
     conn = connect(param_dic)
 
     # Create tables:
-    table_2018 = table_name + "_2018"
-    create_table(conn, bike_dtypes_postgres, table_2018)
-    print("Done creating table")
+    table_List = []
+    for i in range(int(start_year), int(end_year) + 1):
+        table_List.append(f"{table_name}_{str(i)}")
+
+    create_multi_tables(conn, bike_dtypes_postgres, table_List)
 
     for file in file_List:
+        year = file.split('-')[0][-4:]
         total_path = url + file
         total_path = total_path.replace(" ", "%20")
        
@@ -175,7 +164,7 @@ def main():
         
         # Copying to database:
         t_start = time()
-        copy_from_csv(conn, df, table_2018)
+        copy_from_csv(conn, df, f"{table_name}_{year}")
         t_end = time()
         print('inserted another chunk, took %.3f second' % (t_end - t_start))
 
@@ -184,4 +173,10 @@ def main():
     conn.close()
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
+    parser.add_argument('--start', required=True, type = int, help='start year to collect data')
+    parser.add_argument('--end', required=True, type = int, help='end year to collect data')
+
+    args = parser.parse_args()
+
+    main(args)
