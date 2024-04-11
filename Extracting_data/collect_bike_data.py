@@ -166,7 +166,7 @@ def main(args):
         t_start = time()
         copy_from_csv(conn, df, f"{table_name}_{year}")
         t_end = time()
-        print('inserted another chunk, took %.3f second' % (t_end - t_start))
+        print('inserted {}, took {} second'.format(file, round(t_end - t_start,3)))
 
     t_total_end = time()
     print('Completed uploading data to postgres, took %.3f second' % (t_total_end - t_total_start))
