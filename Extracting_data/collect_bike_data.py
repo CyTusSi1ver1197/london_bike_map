@@ -98,10 +98,12 @@ def generate_csv_name(start_year, end_year):
     str_List = []
 
     while(start_week.year != end_year+1):
+        
         next_week = start_week + dt.timedelta(6)
         formatted_date_start = start_week.strftime("%d%b%Y")
         formatted_date_end = next_week.strftime("%d%b%Y")
-        str_List.append(str(str(id) + pre_date + formatted_date_start +"-"+ formatted_date_end+after_date))
+        if(id >= 112):
+            str_List.append(str(str(id) + pre_date + formatted_date_start +"-"+ formatted_date_end+after_date))
         start_week = next_week + dt.timedelta(1)
         id += 1
     
@@ -155,18 +157,21 @@ def main(args):
     create_multi_tables(conn, bike_dtypes_postgres, table_List)
 
     for file in file_List:
-        year = file.split('-')[0][-4:]
-        total_path = url + file
-        total_path = total_path.replace(" ", "%20")
-       
-        # Reading data files
-        df = pd.read_csv(total_path, low_memory = False, dayfirst=True, index_col=0, dtype=bike_dtypes, parse_dates=parsing_dates)
+        try:
+            year = file.split('-')[0][-4:]
+            total_path = url + file
+            total_path = total_path.replace(" ", "%20")
         
-        # Copying to database:
-        t_start = time()
-        copy_from_csv(conn, df, f"{table_name}_{year}")
-        t_end = time()
-        print('inserted {}, took {} second'.format(file, round(t_end - t_start,3)))
+            # Reading data files
+            df = pd.read_csv(total_path, low_memory = False, dayfirst=True, index_col=0, dtype=bike_dtypes, parse_dates=parsing_dates)
+            
+            # Copying to database:
+            t_start = time()
+            copy_from_csv(conn, df, f"{table_name}_{year}")
+            t_end = time()
+            print('inserted {}, took {} second'.format(file, round(t_end - t_start,3)))
+        except FileNotFoundError:
+            continue
 
     t_total_end = time()
     print('Completed uploading data to postgres, took %.3f second' % (t_total_end - t_total_start))
