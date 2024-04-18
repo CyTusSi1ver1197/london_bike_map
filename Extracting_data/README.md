@@ -208,4 +208,4 @@
 
     The `green-taxi-data` and `my_first_dbt_model` are just my testing tables before running the scripts.
 
-- And that's how this script works, feel free to ask any question related to this by adding questions in `Issue` section. 
+- And that's how this script works, feel free to ask any question related to this by adding questions in `Issue` section.

@@ -1,0 +1,88 @@
+version: 2
+
+sources:
+  - name: staging
+    database: postgres
+    schema: public
+    tables:
+      - name: journey_bike_trip_2018
+      - name: journey_bike_trip_2019
+
+models:
+  - name: staging_journey_bike_trip_2018
+    description: ""
+    columns:
+      - name: rental id
+        data_type: bigint
+        description: ""
+
+      - name: duration
+        data_type: bigint
+        description: ""
+
+      - name: bike id
+        data_type: bigint
+        description: ""
+
+      - name: end date
+        data_type: timestamp without time zone
+        description: ""
+
+      - name: endstation id
+        data_type: bigint
+        description: ""
+
+      - name: endstation name
+        data_type: text
+        description: ""
+
+      - name: start date
+        data_type: timestamp without time zone
+        description: ""
+
+      - name: startstation id
+        data_type: bigint
+        description: ""
+
+      - name: startstation name
+        data_type: text
+        description: ""
+
+  - name: staging_journey_bike_trip_2019
+    description: ""
+    columns:
+      - name: rental id
+        data_type: bigint
+        description: ""
+
+      - name: duration
+        data_type: bigint
+        description: ""
+
+      - name: bike id
+        data_type: bigint
+        description: ""
+
+      - name: end date
+        data_type: timestamp without time zone
+        description: ""
+
+      - name: endstation id
+        data_type: bigint
+        description: ""
+
+      - name: endstation name
+        data_type: text
+        description: ""
+
+      - name: start date
+        data_type: timestamp without time zone
+        description: ""
+
+      - name: startstation id
+        data_type: bigint
+        description: ""
+
+      - name: startstation name
+        data_type: text
+        description: ""
