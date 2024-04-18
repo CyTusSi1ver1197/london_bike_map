@@ -102,8 +102,7 @@ def generate_csv_name(start_year, end_year):
         next_week = start_week + dt.timedelta(6)
         formatted_date_start = start_week.strftime("%d%b%Y")
         formatted_date_end = next_week.strftime("%d%b%Y")
-        if(id >= 112):
-            str_List.append(str(str(id) + pre_date + formatted_date_start +"-"+ formatted_date_end+after_date))
+        str_List.append(str(str(id) + pre_date + formatted_date_start +"-"+ formatted_date_end+after_date))
         start_week = next_week + dt.timedelta(1)
         id += 1
     
@@ -133,15 +132,15 @@ def main(args):
     parsing_dates = ["End Date", "Start Date"]
 
     bike_dtypes_postgres = {
-        "Rental Id": "BIGINT",
+        "Rental_Id": "BIGINT",
         "Duration": "BIGINT",
-        "Bike Id": "BIGINT",
-        "End Date": "TIMESTAMP",
-        "EndStation Id": "BIGINT",
-        "EndStation Name": "TEXT",
-        "Start Date": "TIMESTAMP",
-        "StartStation Id": "BIGINT",
-        "StartStation Name": "TEXT"
+        "Bike_Id": "BIGINT",
+        "End_Date": "TIMESTAMP",
+        "EndStation_Id": "BIGINT",
+        "EndStation_Name": "TEXT",
+        "Start_Date": "TIMESTAMP",
+        "StartStation_Id": "BIGINT",
+        "StartStation_Name": "TEXT"
     }
 
 
@@ -155,7 +154,7 @@ def main(args):
         table_List.append(f"{table_name}_{str(i)}")
 
     create_multi_tables(conn, bike_dtypes_postgres, table_List)
-
+    new_format_name = ["Duration", "Bike_Id", "End_Date", "EndStation_Id", "EndStation_Name", "Start_Date", "StartStation_Id", "StartStation_Name"]
     for file in file_List:
         try:
             year = file.split('-')[0][-4:]
@@ -164,7 +163,7 @@ def main(args):
         
             # Reading data files
             df = pd.read_csv(total_path, low_memory = False, dayfirst=True, index_col=0, dtype=bike_dtypes, parse_dates=parsing_dates)
-            
+            df.columns = new_format_name
             # Copying to database:
             t_start = time()
             copy_from_csv(conn, df, f"{table_name}_{year}")
